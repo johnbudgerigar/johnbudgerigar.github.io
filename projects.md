@@ -3,7 +3,7 @@
 # Projects:
 ## Project 1: Pygame ball physics
 <iframe src="https://drive.google.com/file/d/1qkxndQWLZGwugsT9RIgLM-NNatp-nrVU/view?usp=sharing" width="640" height="480" allow="autoplay"></iframe>
-This is a cool project in pygame with physics! You can apply an impulse to a ball and watch it bounce around the window.
+This is a cool project in pygame with physics! You can apply an impulse to a ball and watch it bounce around the window. It has gravity and elasticity. (video might not load properly, but you can run the code yourself!)
 
 <details>
   <summary>Source code</summary>
