@@ -1,5 +1,5 @@
 # About Me
-Hello! I am [Your Initials or Nickname].
+Hello! I am John Budgerigar.
 Write a short paragraph about your interests, skills, or goals.
 
 ## Navigation
