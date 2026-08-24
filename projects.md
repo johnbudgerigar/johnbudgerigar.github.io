@@ -7,7 +7,8 @@ This is a cool project in pygame with physics! You can apply an impulse to a bal
 
 <details>
   <summary>Source code</summary>
-  
+There may be issues with the code formatting, I apologize for not being able to resolve it!
+
 ```python
 import pygame
 
