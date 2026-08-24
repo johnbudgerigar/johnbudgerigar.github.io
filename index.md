@@ -1,4 +1,4 @@
-# Welcome to My Portfolio Hello! My name is John Budgerigar.
+# Welcome to My Portfolio: Hello! My name is John Budgerigar.
 ## Projects
 - Project 1: [View project](projects.md)
   
