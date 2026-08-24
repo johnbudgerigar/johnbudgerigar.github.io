@@ -2,4 +2,4 @@ title: My Wrangler Studios Portfolio
 description: This is my portfolio showcasing my projects and skills.
 baseurl: "" # leave empty since this is your user page
 url: "https://johnbudgerigar.github.io" # replace YOURUSERNAME with your GitHub username
-theme: jekyll-theme-slate # replace “merlot” with your chosen theme from the list
+theme: jekyll-theme-modernist # replace “merlot” with your chosen theme from the list
