@@ -8,7 +8,7 @@ This is a cool project in pygame with physics! You can apply an impulse to a bal
 <details>
   <summary>Source code</summary>
   
-```
+```python
 import pygame
 
 GRAVITY = 300
