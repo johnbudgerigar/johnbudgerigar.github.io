@@ -219,6 +219,7 @@ pygame.quit()
         const mineTotal = 10;
         let cells = [];
         let gameOver = false;
+        let minesPlaced = false;
 
         function neighbours(index) {
             const row = Math.floor(index / size);
@@ -240,6 +241,7 @@ pygame.quit()
         function reveal(index) {
             const cell = cells[index];
             if (gameOver || cell.revealed || cell.flagged) return;
+            if (!minesPlaced) placeMines(index);
             cell.revealed = true;
             cell.element.classList.add("revealed");
             cell.element.disabled = true;
@@ -269,6 +271,20 @@ pygame.quit()
             }
         }
 
+        function placeMines(firstIndex) {
+            const protectedCells = new Set([firstIndex, ...neighbours(firstIndex)]);
+            const mineIndexes = new Set();
+            while (mineIndexes.size < mineTotal) {
+                const candidate = Math.floor(Math.random() * cells.length);
+                if (!protectedCells.has(candidate)) mineIndexes.add(candidate);
+            }
+            mineIndexes.forEach((mineIndex) => { cells[mineIndex].mine = true; });
+            cells.forEach((item) => {
+                item.count = neighbours(item.index).filter((neighbourIndex) => cells[neighbourIndex].mine).length;
+            });
+            minesPlaced = true;
+        }
+
         function toggleFlag(cell) {
             if (cell.revealed || gameOver) return;
             cell.flagged = !cell.flagged;
@@ -280,15 +296,12 @@ pygame.quit()
 
         function startGame() {
             gameOver = false;
-            statusElement.textContent = "In progress";
+            minesPlaced = false;
+            statusElement.textContent = "Click a tile to begin";
             mineCountElement.textContent = `Mines: ${mineTotal}`;
             boardElement.replaceChildren();
             cells = Array.from({ length: size * size }, (_, index) => ({ index, mine: false, count: 0, revealed: false, flagged: false }));
-            const mineIndexes = new Set();
-            while (mineIndexes.size < mineTotal) mineIndexes.add(Math.floor(Math.random() * cells.length));
-            mineIndexes.forEach((index) => { cells[index].mine = true; });
             cells.forEach((cell) => {
-                cell.count = neighbours(cell.index).filter((index) => cells[index].mine).length;
                 const button = document.createElement("button");
                 button.className = "minesweeper-cell";
                 button.type = "button";
@@ -351,6 +364,9 @@ pygame.quit()
             <label class="astar-check"><input id="astar-diagonal" type="checkbox"> Allow diagonal movement</label>
             <div class="astar-actions">
                 <button id="astar-start" class="astar-primary" type="button">Start simulation</button>
+                <button id="astar-pause" type="button">Pause</button>
+                <button id="astar-resume" type="button">Resume</button>
+                <button id="astar-end" type="button">End simulation</button>
                 <button id="astar-clear" type="button">Clear walls</button>
             </div>
             <p id="astar-status" class="astar-status" aria-live="polite">Ready to paint your grid.</p>
@@ -363,50 +379,51 @@ pygame.quit()
     .astar-project {
         --ink: #18242d;
         --muted: #687783;
-        --line: #d9e1e5;
-        --panel: #f7f9f8;
-        --teal: #147d78;
-        --orange: #e08b4f;
+        --line: #7f8c98;
+        --panel: #d7dce2;
+        --teal: #245a87;
+        --orange: #8a4f21;
         margin: 1rem 0 2rem;
-        padding: clamp(1rem, 3vw, 2rem);
-        border: 1px solid var(--line);
-        border-radius: 8px;
+        padding: 0.5rem;
+        border: 2px outset #f5f5f5;
+        border-radius: 0;
         color: var(--ink);
-        background: linear-gradient(135deg, #f8fbfa, #eaf0ee);
-        box-shadow: 0 12px 28px rgba(24, 36, 45, 0.1);
+        background: #c5ccd4;
+        font-family: "Trebuchet MS", Tahoma, sans-serif;
     }
 
     .astar-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
-    .astar-heading h3 { margin: 0.1rem 0 0.4rem; font-size: clamp(1.25rem, 3vw, 1.8rem); }
+    .astar-heading h3 { margin: 0.1rem 0 0.4rem; font-size: 1.35rem; }
     .astar-heading p { margin: 0; color: var(--muted); }
     .astar-kicker { color: var(--teal) !important; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
-    .astar-badge { padding: 0.65rem 0.75rem; border-radius: 50%; color: #fff; background: var(--teal); font-weight: 800; }
+    .astar-badge { padding: 0.25rem 0.5rem; border: 2px outset #f5f5f5; color: #fff; background: var(--teal); font-weight: 800; }
     .astar-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(210px, 260px); gap: 1.25rem; margin-top: 1.5rem; }
-    .astar-board { display: grid; gap: 2px; width: 100%; min-width: 0; padding: 3px; border: 1px solid #c3d0d0; background: #c3d0d0; }
-    .astar-cell { min-width: 0; aspect-ratio: 1; padding: 0; border: 0; background: #fff; cursor: crosshair; transition: background 120ms ease; }
+    .astar-board { display: grid; gap: 0; width: 100%; min-width: 0; aspect-ratio: 24 / 14; padding: 0; border: 2px inset #f5f5f5; background: #fff; }
+    .astar-cell { min-width: 0; min-height: 0; width: 100%; height: 100%; padding: 0; border: 0; outline: 1px solid #c8d0d8; outline-offset: -1px; background: #fff; cursor: crosshair; }
     .astar-cell.wall { background: #263641; }
     .astar-cell.start { background: #e08b4f; box-shadow: inset 0 0 0 3px #fff; }
     .astar-cell.goal { background: #147d78; box-shadow: inset 0 0 0 3px #fff; }
-    .astar-cell.open { background: #c8e5e0; }
-    .astar-cell.closed { background: #a9cfca; }
-    .astar-cell.explored { background: #dcecea; }
-    .astar-cell.path { background: #e08b4f; }
-    .astar-controls { display: flex; flex-direction: column; gap: 1rem; padding: 1rem; border: 1px solid var(--line); background: var(--panel); }
+    .astar-cell.open { background: #c5d9ed; }
+    .astar-cell.open { opacity: 0.72; }
+    .astar-cell.closed { background: #9db8d1; opacity: 0.56; }
+    .astar-cell.explored { background: #e0e8f0; opacity: 0.42; }
+    .astar-cell.path { background: #d99558; }
+    .astar-controls { display: flex; flex-direction: column; gap: 0.75rem; padding: 0.65rem; border: 2px inset #f5f5f5; background: var(--panel); }
     .astar-control-group { display: flex; flex-direction: column; gap: 0.4rem; }
     .astar-control-group > label, .astar-check { color: var(--muted); font-size: 0.78rem; font-weight: 800; text-transform: uppercase; }
     .astar-control-group output { float: right; color: var(--teal); text-transform: none; }
     .astar-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
     .astar-project button, .astar-project input, .astar-project select { font: inherit; }
-    .astar-project button { padding: 0.5rem 0.6rem; border: 1px solid #c6d1d4; border-radius: 4px; color: var(--ink); background: #fff; cursor: pointer; }
-    .astar-project button:hover, .astar-project button.active { border-color: var(--teal); color: #fff; background: var(--teal); }
-    .astar-project input[type="number"], .astar-project select { box-sizing: border-box; width: 100%; padding: 0.45rem; border: 1px solid #c6d1d4; border-radius: 4px; background: #fff; }
+    .astar-project button { padding: 0.4rem 0.55rem; border: 2px outset #f5f5f5; border-radius: 0; color: var(--ink); background: #d7dce2; cursor: pointer; }
+    .astar-project button:hover, .astar-project button.active { border-style: inset; color: #fff; background: var(--teal); }
+    .astar-project input[type="number"], .astar-project select { box-sizing: border-box; width: 100%; padding: 0.35rem; border: 2px inset #f5f5f5; border-radius: 0; background: #fff; }
     .astar-fields > div { display: flex; align-items: center; gap: 0.4rem; }
     .astar-fields input { width: 5rem !important; }
     .astar-check { display: flex; align-items: center; gap: 0.5rem; text-transform: none; }
     .astar-check input { accent-color: var(--teal); }
     .astar-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
     .astar-project button.astar-primary { border-color: var(--orange); color: #fff; background: var(--orange); }
-    .astar-project button.astar-primary:hover { border-color: #bd6933; background: #bd6933; }
+    .astar-project button.astar-primary:hover { border-color: #653815; background: #653815; }
     .astar-status { min-height: 2.5rem; margin: 0; padding-top: 0.75rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
     .astar-legend { display: flex; flex-wrap: wrap; gap: 0.65rem; color: var(--muted); font-size: 0.72rem; }
     .astar-legend span { display: inline-block; width: 0.8rem; height: 0.8rem; margin-right: -0.45rem; border-radius: 2px; }
@@ -430,6 +447,10 @@ pygame.quit()
         let tool = "wall";
         let running = false;
         let painting = false;
+        let paused = false;
+        let timerId = null;
+        let runToken = 0;
+        let resumeSearch = null;
 
         function index(row, column) { return row * columns + column; }
         function neighbours(node) {
@@ -441,6 +462,8 @@ pygame.quit()
         }
         function render() {
             board.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
+            board.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
+            board.style.aspectRatio = `${columns} / ${rows}`;
             board.replaceChildren();
             grid.forEach((node) => {
                 const cell = document.createElement("button");
@@ -474,42 +497,60 @@ pygame.quit()
             node.element.className = `astar-cell ${node.type}`;
             node.element.setAttribute("aria-label", `${node.type || "open"}, row ${node.row + 1}, column ${node.column + 1}`);
         }
-        function heuristic(first, second) { return Math.abs(first.row - second.row) + Math.abs(first.column - second.column); }
-        function clearSearch() { grid.forEach((node) => { node.element.classList.remove("open", "closed", "explored", "path"); }); }
+        function heuristic(first, second) {
+            const rowDistance = Math.abs(first.row - second.row);
+            const columnDistance = Math.abs(first.column - second.column);
+            if (!diagonalInput.checked) return rowDistance + columnDistance;
+            const diagonalDistance = Math.min(rowDistance, columnDistance);
+            return rowDistance + columnDistance + (Math.SQRT2 - 2) * diagonalDistance;
+        }
+        function clearSearch() {
+            grid.forEach((node) => {
+                node.element.classList.remove("open", "closed", "explored", "path");
+                node.element.style.opacity = "";
+            });
+        }
         function runSearch() {
             if (running) return;
             const start = grid.find((node) => node.type === "start");
             const goal = grid.find((node) => node.type === "goal");
             if (!start || !goal) { status.textContent = "Add both a start and a goal first."; return; }
-            running = true; clearSearch(); status.textContent = "Calculating the route...";
-            const open = [start]; const cameFrom = new Map(); const cost = new Map([[start, 0]]); const visited = [];
+            running = true; paused = false; runToken += 1; clearSearch(); status.textContent = "Calculating the route...";
+            const thisRun = runToken;
+            const open = [start]; const closed = new Set(); const cameFrom = new Map(); const cost = new Map([[start, 0]]); const visited = [];
             function tick() {
+                if (thisRun !== runToken || paused) return;
                 if (!open.length) { running = false; status.textContent = "No route found through this landscape."; return; }
                 open.sort((first, second) => (cost.get(first) + heuristic(first, goal)) - (cost.get(second) + heuristic(second, goal)));
                 const current = open.shift(); visited.push(current);
                 if (current === goal) { showPath(cameFrom, goal); return; }
-                current.element.classList.add("closed");
+                closed.add(current);
+                if (displayInput.value === "all") current.element.classList.add("closed");
                 neighbours(current).forEach((next) => {
-                    if (next.type === "wall") return;
+                    if (next.type === "wall" || closed.has(next)) return;
                     const nextCost = cost.get(current) + ((next.row !== current.row && next.column !== current.column) ? 1.4 : 1);
                     if (!cost.has(next) || nextCost < cost.get(next)) {
                         cost.set(next, nextCost); cameFrom.set(next, current);
-                        if (!open.includes(next)) { open.push(next); next.element.classList.add("open"); }
+                        if (!open.includes(next)) { open.push(next); if (displayInput.value === "all") next.element.classList.add("open"); }
                     }
                 });
                 if (displayInput.value === "all") visited.forEach((node) => node.element.classList.add("explored"));
-                setTimeout(tick, Number(speedInput.value));
+                timerId = setTimeout(tick, Number(speedInput.value));
             }
             function showPath(cameFrom, current) {
                 const path = [];
                 while (current) { path.unshift(current); current = cameFrom.get(current); }
-                path.forEach((node, pathIndex) => setTimeout(() => node.element.classList.add("path"), pathIndex * 35));
-                setTimeout(() => { running = false; status.textContent = `Route found in ${path.length - 1} steps.`; }, path.length * 35);
+                path.forEach((node, pathIndex) => setTimeout(() => { if (thisRun === runToken) node.element.classList.add("path"); }, pathIndex * 35));
+                timerId = setTimeout(() => { if (thisRun === runToken) { running = false; status.textContent = `Route found in ${path.length - 1} steps.`; } }, path.length * 35);
             }
+            resumeSearch = tick;
             tick();
         }
         document.querySelectorAll(".astar-tool").forEach((button) => button.addEventListener("click", () => { document.querySelectorAll(".astar-tool").forEach((item) => item.classList.remove("active")); button.classList.add("active"); tool = button.dataset.tool; }));
         document.getElementById("astar-start").addEventListener("click", runSearch);
+        document.getElementById("astar-pause").addEventListener("click", () => { if (running && !paused) { paused = true; clearTimeout(timerId); status.textContent = "Simulation paused."; } });
+        document.getElementById("astar-resume").addEventListener("click", () => { if (running && paused && resumeSearch) { paused = false; status.textContent = "Calculating the route..."; resumeSearch(); } });
+        document.getElementById("astar-end").addEventListener("click", () => { if (running) { runToken += 1; clearTimeout(timerId); running = false; paused = false; clearSearch(); status.textContent = "Simulation ended."; } });
         document.getElementById("astar-clear").addEventListener("click", () => { grid.forEach((node) => { if (node.type === "wall") node.type = ""; }); render(); status.textContent = "Walls cleared."; });
         columnsInput.addEventListener("change", createGrid); rowsInput.addEventListener("change", createGrid);
         speedInput.addEventListener("input", () => { speedValue.textContent = `${speedInput.value} ms`; });
