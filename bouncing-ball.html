@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bouncing Ball Physics Simulator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #1a1a1a;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        
+        .instructions {
+            color: #ddd;
+            text-align: center;
+            margin-bottom: 20px;
+            max-width: 600px;
+        }
+        
+        .controls {
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: center;
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .controls p {
+            margin: 5px 0;
+        }
+        
+        #container {
+            position: relative;
+            background: #222;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        a.back-link {
+            color: #66d9ff;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        
+        a.back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Bouncing Ball Physics Simulator</h1>
+    
+    <div class="instructions">
+        <p>A physics-based simulation with gravity, elasticity, and wall collisions.</p>
+    </div>
+    
+    <div class="controls">
+        <p><strong>Controls:</strong></p>
+        <p>W - Move Up | S - Move Down | A - Move Left | D - Move Right</p>
+    </div>
+    
+    <div id="container"></div>
+    
+    <a href="index.md" class="back-link">← Back to Portfolio</a>
+
+    <script>
+        const GRAVITY = 300;
+        const ELASTICITY = 0.8;
+        const BALL_RADIUS = 40;
+        const IMPULSE = 300;
+
+        let ball = {
+            x: 0,
+            y: 0,
+            xVelocity: 0,
+            yVelocity: 0
+        };
+
+        let screenWidth = 1280;
+        let screenHeight = 720;
+
+        function setup() {
+            const container = document.getElementById('container');
+            const width = Math.min(1280, window.innerWidth - 40);
+            const height = (width / 1280) * 720;
+            
+            screenWidth = width;
+            screenHeight = height;
+            
+            createCanvas(width, height);
+            container.appendChild(document.querySelector('canvas'));
+            
+            ball.x = width / 2;
+            ball.y = height / 2;
+        }
+
+        function draw() {
+            // Time delta in seconds
+            let dt = deltaTime / 1000;
+            
+            background(128, 0, 128); // purple
+
+            // Physics: gravity changes velocity
+            ball.yVelocity += GRAVITY * dt;
+
+            // Velocity changes position
+            ball.x += ball.xVelocity * dt;
+            ball.y += ball.yVelocity * dt;
+
+            // Collision detection with bounds
+            
+            // Ceiling collision
+            if (ball.y <= BALL_RADIUS) {
+                ball.y = BALL_RADIUS;
+                ball.yVelocity = -ball.yVelocity * ELASTICITY;
+            }
+
+            // Floor collision
+            if (ball.y >= screenHeight - BALL_RADIUS) {
+                ball.y = screenHeight - BALL_RADIUS;
+                ball.yVelocity = -ball.yVelocity * ELASTICITY;
+            }
+
+            // Left wall collision
+            if (ball.x <= BALL_RADIUS) {
+                ball.x = BALL_RADIUS;
+                ball.xVelocity = -ball.xVelocity * ELASTICITY;
+            }
+
+            // Right wall collision
+            if (ball.x >= screenWidth - BALL_RADIUS) {
+                ball.x = screenWidth - BALL_RADIUS;
+                ball.xVelocity = -ball.xVelocity * ELASTICITY;
+            }
+
+            // Draw ball
+            fill(255, 0, 0); // red
+            circle(ball.x, ball.y, BALL_RADIUS * 2);
+
+            // Handle input
+            if (keyIsDown(87)) { // W
+                ball.yVelocity -= IMPULSE;
+            }
+            if (keyIsDown(83)) { // S
+                ball.yVelocity += IMPULSE;
+            }
+            if (keyIsDown(65)) { // A
+                ball.xVelocity -= IMPULSE;
+            }
+            if (keyIsDown(68)) { // D
+                ball.xVelocity += IMPULSE;
+            }
+
+            // Draw velocity text
+            fill(255);
+            textSize(18);
+            text(`X Velocity: ${ball.xVelocity.toFixed(2)}  Y Velocity: ${ball.yVelocity.toFixed(2)}`, 10, 30);
+        }
+
+        function windowResized() {
+            if (window.innerWidth < 1300) {
+                const width = Math.min(1280, window.innerWidth - 40);
+                const height = (width / 1280) * 720;
+                screenWidth = width;
+                screenHeight = height;
+                resizeCanvas(width, height);
+            }
+        }
+    </script>
+</body>
+</html>
