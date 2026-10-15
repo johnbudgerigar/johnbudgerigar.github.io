@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10141d">
+    <title>LOOP — Search Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Loop Search Lab home">
+          <span class="brand-mark"><span></span><span></span><span></span></span>
+          <span>loop<span class="brand-light">lab</span></span>
+        </a>
+        <div class="topbar-center"><span class="status-dot"></span> SEARCH ALGORITHM STUDIO</div>
+        <div class="topbar-right">
+        <span class="save-status"><span class="save-check">✓</span> Workspace ready</span>
+          <button class="avatar" aria-label="Profile">K</button>
+        </div>
+      </header>
+
+      <main>
+        <section class="lessonbar">
+          <div class="lesson-title">
+            <span class="eyebrow">YOUR WORKSPACE</span>
+            <h1>Search Lab <span class="title-slash">/</span> <span id="level-name">First steps</span></h1>
+          </div>
+          <div class="lesson-controls">
+            <label class="level-select-label" for="level-select">LEVEL</label>
+            <select id="level-select" aria-label="Choose a level"></select>
+            <span class="level-count" id="level-count"></span>
+          </div>
+        </section>
+
+        <section class="challenge-strip" aria-label="Challenge objective">
+          <div class="challenge-icon">◎</div>
+          <div class="challenge-copy">
+            <span class="eyebrow">YOUR CHALLENGE</span>
+            <p id="challenge-text"></p>
+          </div>
+          <div class="challenge-stat"><span>TARGET</span><strong id="target-stat"></strong></div>
+          <div class="challenge-stat"><span>MAX STEPS</span><strong id="steps-stat"></strong></div>
+          <div class="challenge-actions">
+            <button class="hint-button" id="hint-button"><span>✳</span> Hint <span class="hint-count" id="hint-count">0/3</span></button>
+            <button class="reset-button" id="reset-button" title="Reset your program">↺</button>
+          </div>
+        </section>
+
+        <div class="workspace">
+          <aside class="panel palette-panel">
+            <div class="panel-heading">
+              <div><span class="eyebrow">TOOLBOX</span><h2>Blocks</h2></div>
+              <span class="drag-label">DRAG TO ADD</span>
+            </div>
+            <label class="block-search-wrap" for="block-search">
+              <span aria-hidden="true">⌕</span>
+              <input id="block-search" type="search" placeholder="Search blocks" autocomplete="off">
+              <kbd>/</kbd>
+            </label>
+            <div class="palette-groups">
+              <section class="palette-group">
+                <h3><span class="group-dot flow-dot"></span> FLOW</h3>
+                <button class="palette-block flow-block" draggable="true" data-kind="for"><span class="block-icon">↻</span><span>for each index</span><span class="drag-grip">⠿</span></button>
+                <button class="palette-block flow-block" draggable="true" data-kind="while"><span class="block-icon">↻</span><span>while condition</span><span class="drag-grip">⠿</span></button>
+                <button class="palette-block flow-block" draggable="true" data-kind="if"><span class="block-icon">◇</span><span>if condition</span><span class="drag-grip">⠿</span></button>
+                <button class="palette-block flow-block" draggable="true" data-kind="else"><span class="block-icon">↳</span><span>else</span><span class="drag-grip">⠿</span></button>
+              </section>
+              <section class="palette-group">
+                <h3><span class="group-dot values-dot"></span> VARIABLES</h3>
+                <button class="palette-block variable-block" draggable="true" data-kind="set"><span class="block-icon">x</span><span>set a variable</span><span class="drag-grip">⠿</span></button>
+                <button class="palette-block variable-block" draggable="true" data-kind="increment"><span class="block-icon">＋</span><span>increase by 1</span><span class="drag-grip">⠿</span></button>
+              </section>
+              <section class="palette-group">
+                <h3><span class="group-dot logic-dot"></span> LOGIC</h3>
+                <button class="palette-block logic-block" draggable="true" data-kind="compare"><span class="block-icon">＝</span><span>comparison</span><span class="drag-grip">⠿</span></button>
+                <button class="palette-block logic-block" draggable="true" data-kind="return"><span class="block-icon">↗</span><span>return an index</span><span class="drag-grip">⠿</span></button>
+              </section>
+              <section class="palette-group">
+                <h3><span class="group-dot comment-dot"></span> NOTES</h3>
+                <button class="palette-block comment-block" draggable="true" data-kind="comment"><span class="block-icon">▤</span><span>comment</span><span class="drag-grip">⠿</span></button>
+              </section>
+            </div>
+            <div class="palette-tip"><span>⌁</span><p>Drag blocks into your program, or click one to add it.</p></div>
+          </aside>
+
+          <section class="panel code-panel">
+            <div class="panel-heading code-heading">
+              <div class="editor-file"><span class="file-icon">▧</span><div><span class="eyebrow">WORKSPACE / SEARCH LAB</span><h2>algorithm.blocks</h2></div></div>
+              <div class="mode-toggle" role="group" aria-label="Play mode">
+                <button class="mode-button active" data-mode="guided">Guided</button>
+                <button class="mode-button" data-mode="free">Free play</button>
+              </div>
+            </div>
+            <div class="guided-banner" id="guided-banner"><span class="guided-spark">✳</span><span id="guided-message">Start by adding a loop to check the array.</span><button id="dismiss-guided" aria-label="Dismiss guided tip">×</button></div>
+            <div class="editor-toolbar">
+              <span class="editor-breadcrumb">On Run <span>›</span> algorithm</span>
+              <label class="speed-control" for="speed-range"><span>STEP SPEED</span><input id="speed-range" type="range" min="1" max="10" value="6"><output id="speed-value" for="speed-range">6×</output></label>
+            </div>
+            <div class="program-scroll">
+              <div class="program-root">
+                <div class="start-block"><span class="start-icon">▶</span><strong>On Run</strong><span class="start-caption">your program starts here</span><span class="start-tab" aria-hidden="true"></span></div>
+                <div class="program-connector"></div>
+                <div id="program-list" class="program-list drop-zone" data-parent="root" aria-label="Program blocks"></div>
+                <button class="add-root-button" id="add-root-button"><span>＋</span> Add a block</button>
+                <div class="end-block"><span>END</span></div>
+              </div>
+            </div>
+            <div class="canvas-footer">
+              <div class="execution-info"><span class="execution-dot" id="execution-dot"></span><span id="execution-label">Ready to run</span></div>
+              <div class="canvas-actions">
+                <button class="clear-button" id="clear-button">Clear</button>
+                <button class="run-button" id="run-button"><span>▶</span> Run algorithm</button>
+              </div>
+            </div>
+          </section>
+
+          <aside class="panel data-panel">
+            <div class="data-tabs" role="tablist" aria-label="Workspace reference">
+              <button class="data-tab active" id="search-tab" role="tab" aria-selected="true" aria-controls="search-space-view" data-view="search-space-view"><span>▥</span> Search space</button>
+              <button class="data-tab" id="docs-tab" role="tab" aria-selected="false" aria-controls="docs-view" data-view="docs-view"><span>⌘</span> Docs</button>
+            </div>
+            <div id="search-space-view" class="data-view active" role="tabpanel" aria-labelledby="search-tab">
+              <div class="panel-heading data-heading">
+                <div><span class="eyebrow">LIVE DATA</span><h2>Search space</h2></div>
+                <button class="array-shuffle" id="shuffle-button" title="Load another challenge">⤨</button>
+              </div>
+              <div class="array-meta"><span>ARRAY <strong id="array-size"></strong></span><span>INDEX <span class="axis-chip">X</span> · VALUE <span class="axis-chip y-chip">Y</span></span></div>
+              <div class="chart-wrap">
+                <div class="chart-y-axis"><span id="max-value-label"></span><span id="mid-value-label"></span><span>0</span></div>
+                <div class="chart" id="array-chart" aria-label="Array values shown as a bar chart"></div>
+              </div>
+              <div class="chart-legend"><span><i class="legend-bar"></i> Unchecked</span><span><i class="legend-bar active-legend"></i> Current index</span></div>
+              <div class="result-card" id="result-card">
+                <span class="result-icon">⌖</span>
+                <div><span class="eyebrow">RESULT</span><strong id="result-text">Waiting to run</strong></div>
+              </div>
+              <div class="variable-card">
+                <div class="variable-card-heading"><span class="eyebrow">VARIABLES</span><span class="live-pill"><i></i> LIVE</span></div>
+                <div id="variable-list" class="variable-list"><span class="empty-vars">Variables appear as your program runs.</span></div>
+              </div>
+              <div class="step-meter">
+                <div><span>STEPS TAKEN</span><strong id="step-count">0</strong><span id="step-limit">/ 0</span></div>
+                <div class="meter-track"><span id="meter-fill"></span></div>
+              </div>
+            </div>
+            <div id="docs-view" class="data-view docs-view" role="tabpanel" aria-labelledby="docs-tab" hidden>
+              <div class="panel-heading data-heading">
+                <div><span class="eyebrow">BLOCK REFERENCE</span><h2>Block docs</h2></div>
+                <span class="docs-version">9 BLOCKS</span>
+              </div>
+              <p class="docs-intro">Every block has a job. Drag one into your program, then snap it into a loop or condition to build an algorithm.</p>
+              <div id="docs-list" class="docs-list"></div>
+            </div>
+          </aside>
+        </div>
+        <footer class="page-footer"><span>LEARN BY BUILDING <b>·</b> ONE BLOCK AT A TIME</span><span>LOOPLAB <b>·</b> SEARCH SERIES</span></footer>
+      </main>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+  </body>
+</html>

@@ -321,3 +321,9 @@ pygame.quit()
         startGame();
     })();
 </script>
+
+## Project 2: LoopLab Search Lab
+
+Build and run visual search algorithms with connected, Scratch-style blocks. The workspace includes guided challenges, live array visualization, block documentation, hints, and adjustable execution speed.
+
+**[Open LoopLab Search Lab](search-lab/)**
