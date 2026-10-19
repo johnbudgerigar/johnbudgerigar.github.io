@@ -322,8 +322,30 @@ pygame.quit()
     })();
 </script>
 
-## Project 2: LoopLab Search Lab
+## Project 3: LoopLab Search Lab
 
 Build and run visual search algorithms with connected, Scratch-style blocks. The workspace includes guided challenges, live array visualization, block documentation, hints, and adjustable execution speed.
 
 **[Open LoopLab Search Lab](search-lab/)**
+
+## Project 4: Java array 
+
+This is a simple array program in java.
+
+<details markdown="1">
+  <summary>Source code</summary>
+
+
+```java
+public class FirstArray extends ConsoleProgram
+{
+    public void run()
+    {
+        int firstArray[] = {2, 4, 6, 8, 10};
+        
+        System.out.println(firstArray[1]);
+        System.out.println(firstArray[3]);
+    }
+}
+```
+</details>
