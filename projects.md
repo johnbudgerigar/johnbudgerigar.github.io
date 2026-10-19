@@ -330,7 +330,7 @@ Build and run visual search algorithms with connected, Scratch-style blocks. The
 
 ## Project 4: Java array 
 
-This is a simple array program in java, with initializing and also indexing.
+This is a simple array program in java, with initializing and also indexing. Open the dropdown to see!
 
 <details markdown="1">
   <summary>Source code</summary>
