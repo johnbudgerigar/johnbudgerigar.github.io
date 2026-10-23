@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#176c87">
+    <title>Safer Online: Desktop Safety Simulator</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --chrome: #e8edf2;
+            --chrome-light: #ffffff;
+            --chrome-dark: #aab8c5;
+            --ink: #172a3a;
+            --blue: #1263a0;
+            --blue-dark: #123f64;
+            --paper: #ffffff;
+            --green: #2a7755;
+            --red: #a63e36;
+            font-family: "Trebuchet MS", Tahoma, sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+        body { margin: 0; color: var(--ink); background: #e8edf2; }
+        button, a { font: inherit; }
+        button { color: inherit; }
+        .page-header { max-width: 1220px; margin: 0 auto; padding: 1.2rem 1.25rem 0.9rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .header-actions { display: flex; align-items: center; gap: 0.55rem; }
+        .page-header h1 { margin: 0; font-size: 1.45rem; }
+        .page-header p { margin: 0.25rem 0 0; color: #4a5b65; font-size: 0.9rem; }
+        .reset-button { display: inline-block; border: 1px solid #b9c7d2; border-radius: 7px; padding: 0.5rem 0.8rem; color: var(--ink); background: #fff; text-decoration: none; cursor: pointer; box-shadow: 0 1px 2px rgba(23, 42, 58, 0.08); }
+        .reset-button:hover { background: #f4f8fb; }
+        main { max-width: 1220px; margin: 0 auto; padding: 0 1.25rem 1.5rem; }
+
+        .desktop-frame { position: relative; height: min(720px, calc(100vh - 150px)); min-height: 570px; overflow: hidden; border: 1px solid #b7c7d4; border-radius: 12px; background-color: #153348; background-image: linear-gradient(145deg, transparent 0 38%, rgba(40, 142, 163, 0.8) 38% 52%, transparent 52% 100%), linear-gradient(35deg, transparent 0 52%, rgba(55, 111, 151, 0.72) 52% 69%, transparent 69% 100%), linear-gradient(155deg, #214965 0%, #1b586b 57%, #163447 100%); box-shadow: 0 18px 40px rgba(24, 40, 49, 0.18); }
+        .desktop-frame::before { content: "TRAINING DESKTOP"; position: absolute; right: 1.2rem; bottom: 4.2rem; color: rgba(255, 255, 255, 0.52); font-family: Consolas, monospace; font-size: 0.75rem; letter-spacing: 0.08em; pointer-events: none; }
+        .desktop-icons { position: absolute; z-index: 1; top: 1rem; left: 0.8rem; display: flex; flex-direction: column; gap: 0.55rem; }
+        .desktop-icon { width: 84px; min-height: 78px; padding: 0.4rem; border: 1px solid transparent; border-radius: 9px; color: #fff; background: transparent; text-shadow: 0 1px 3px #102331; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; }
+        .desktop-icon:hover, .desktop-icon:focus-visible { border-color: rgba(255, 255, 255, 0.48); background: rgba(255, 255, 255, 0.14); outline: none; }
+        .desktop-icon[hidden] { display: none; }
+        .icon-art { width: 42px; height: 38px; display: grid; place-items: center; font-size: 1.75rem; filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.3)); }
+        .desktop-icon span:last-child { font-size: 0.76rem; text-align: center; }
+        .simulation-stamp { position: absolute; top: 0.8rem; right: 0.9rem; padding: 0.3rem 0.5rem; border: 1px solid rgba(255, 255, 255, 0.55); color: #fff; background: rgba(10, 48, 66, 0.35); font: 700 0.7rem Consolas, monospace; letter-spacing: 0.04em; }
+
+        .taskbar { position: absolute; z-index: 5; right: 0; bottom: 0; left: 0; min-height: 48px; padding: 6px 10px; display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(255, 255, 255, 0.5); background: rgba(239, 244, 248, 0.88); backdrop-filter: blur(14px); }
+        .start-button { min-height: 34px; padding: 0.2rem 0.9rem; border: 1px solid #b9c7d2; border-radius: 7px; color: #183c30; background: #fff; font-weight: 800; cursor: pointer; }
+        .task-item { max-width: 170px; overflow: hidden; padding: 0.45rem 0.7rem; border: 1px solid #bdcbd5; border-radius: 7px; background: #f8fafb; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+        .task-clock { margin-left: auto; padding: 0.45rem 0.7rem; border: 1px solid #c2cdd5; border-radius: 7px; color: #263440; background: #fff; font: 0.75rem Consolas, monospace; }
+
+        .window { position: absolute; z-index: 3; top: 50%; left: 50%; display: none; width: min(780px, calc(100% - 140px)); max-height: calc(100% - 88px); overflow: auto; transform: translate(-50%, -50%); border: 1px solid #bac8d2; border-radius: 10px; background: var(--chrome); box-shadow: 0 22px 60px rgba(5, 22, 34, 0.4); }
+        .window.is-open { display: block; }
+        .window-titlebar { min-height: 40px; padding: 0.4rem 0.55rem 0.4rem 0.9rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: #183348; background: #eef3f7; border-bottom: 1px solid #d0dce4; font-weight: 700; font-size: 0.86rem; }
+        .window-close { width: 28px; height: 27px; padding: 0; border: 0; border-radius: 6px; color: #435563; background: transparent; font-weight: 700; cursor: pointer; }
+        .window-close:hover { color: #fff; background: #c84949; }
+        .window-content { margin: 0.45rem; padding: 0.9rem; border: 0; border-radius: 7px; background: var(--paper); }
+        .browser-toolbar { display: flex; gap: 0.45rem; align-items: center; padding: 0.45rem; border: 1px solid #d6e0e6; border-radius: 7px; background: #f0f4f7; }
+        .browser-address { flex: 1; min-width: 0; padding: 0.45rem 0.6rem; border: 1px solid #d6e0e6; border-radius: 6px; background: #fff; color: #314753; font: 0.8rem Consolas, monospace; }
+        .browser-search { margin: 1rem 0 0.55rem; font-size: 1.2rem; }
+        .search-meta { color: #687982; font-size: 0.75rem; }
+        .search-result { padding: 0.75rem 0; border-bottom: 1px solid #d8dfe2; }
+        .search-result h3 { margin: 0; color: #164e83; font-size: 1rem; }
+        .search-result .domain { margin: 0.18rem 0; color: #29724c; font: 0.75rem Consolas, monospace; }
+        .search-result p { margin: 0.3rem 0 0; color: #3b4b54; font-size: 0.84rem; line-height: 1.45; }
+        .result-button { padding: 0; border: 0; color: #164e83; background: none; text-align: left; cursor: pointer; text-decoration: underline; }
+        .result-button:hover { color: #8c411e; }
+        .warning-label { color: #9a4a2b; font-weight: 800; }
+        .product-preview { max-width: 560px; margin: 1rem auto; padding: 1rem; border: 1px solid #cbd4da; background: #f3f7f8; }
+        .product-preview h2 { margin: 0.2rem 0; font-size: 1.2rem; }
+        .product-preview p { line-height: 1.5; }
+        .action-button { padding: 0.55rem 0.85rem; border: 1px solid #bbc9d3; border-radius: 7px; background: #f5f8fa; cursor: pointer; }
+        .action-button.primary { border-color: #1263a0; color: white; background: #1263a0; }
+        .action-button.danger { border-color: #a63e36; color: white; background: #a63e36; }
+        .action-button:disabled { opacity: 0.62; cursor: wait; }
+        .action-button:hover:not(:disabled) { filter: brightness(0.96); }
+        .operation-progress { display: block; width: min(100%, 360px); height: 12px; margin: 0.55rem 0; accent-color: #1263a0; }
+        .operation-progress[hidden] { display: none; }
+        .process-status { min-height: 1.3rem; color: #435563; font-size: 0.85rem; }
+        .source-link { color: #164e83; }
+        .mock-social { max-width: 520px; margin: 0 auto; border: 1px solid #ccd6dc; background: white; }
+        .social-header { padding: 0.8rem; color: white; background: #315e75; font-weight: 800; }
+        .social-body { padding: 1rem; }
+        .social-body h2 { margin-top: 0; font-size: 1.1rem; }
+        .location-card { margin-top: 1rem; padding: 0.9rem; border: 1px solid #d0d8dd; background: #f5f7f8; }
+        .location-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; }
+        .cloud-files { margin: 0.8rem 0; padding: 0; list-style: none; }
+        .cloud-files li { padding: 0.55rem 0.2rem; border-bottom: 1px solid #dce2e5; font-family: Consolas, monospace; font-size: 0.84rem; }
+        .cloud-notice { position: absolute; z-index: 4; top: 1rem; right: 1rem; display: none; width: min(330px, calc(100% - 2rem)); padding: 0.9rem; border: 1px solid #c8d4dc; border-radius: 10px; background: #fff; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22); }
+        .cloud-notice.is-open { display: block; }
+        .cloud-notice strong { display: block; margin-bottom: 0.3rem; }
+        .cloud-notice button { margin-top: 0.65rem; }
+
+        .guide-strip { display: flex; align-items: flex-start; gap: 0.8rem; margin-top: 0.8rem; padding: 0.8rem 1rem; border: 1px solid #cbd6de; border-radius: 9px; background: #fff; box-shadow: 0 2px 6px rgba(24, 40, 49, 0.05); }
+        .guide-number { flex: 0 0 1.8rem; height: 1.8rem; display: grid; place-items: center; border-radius: 7px; color: white; background: #315e75; font-weight: 800; }
+        .guide-strip p { margin: 0; line-height: 1.45; }
+        .guide-strip strong { display: block; margin-bottom: 0.15rem; }
+        .lesson-dialog { width: min(540px, calc(100% - 2rem)); padding: 0; border: 1px solid #b9c8d3; border-radius: 12px; color: var(--ink); background: var(--chrome); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38); overflow: hidden; }
+        .lesson-dialog::backdrop { background: rgba(7, 20, 28, 0.58); }
+        .dialog-titlebar { padding: 0.75rem 1rem; color: #183348; background: #eef3f7; border-bottom: 1px solid #d0dce4; font-weight: 800; }
+        .dialog-body { padding: 1rem; background: var(--paper); line-height: 1.55; }
+        .dialog-body p:first-child { margin-top: 0; }
+        .dialog-body p:last-child { margin-bottom: 0; }
+        .dialog-actions { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0.7rem; border-top: 1px solid #d5dfe5; background: var(--chrome); }
+        .final-summary { padding-left: 1.25rem; }
+        .final-summary li { margin: 0.45rem 0; }
+        .quiz-progress { margin: 0 0 0.7rem; color: #526574; font-size: 0.82rem; font-weight: 700; }
+        .quiz-question { margin: 0; padding: 0; border: 0; }
+        .quiz-question legend { margin-bottom: 0.8rem; font-weight: 800; line-height: 1.45; }
+        .quiz-option { display: flex; align-items: flex-start; gap: 0.6rem; margin: 0.45rem 0; padding: 0.65rem; border: 1px solid #d3dde4; border-radius: 7px; background: #f7f9fa; cursor: pointer; }
+        .quiz-option:hover { background: #eef4f8; }
+        .quiz-option input { flex: 0 0 auto; margin: 0.2rem 0 0; accent-color: #1263a0; }
+        .quiz-feedback { padding: 0.7rem; border-left: 3px solid #1263a0; background: #eef4f8; }
+        .score-card { display: grid; place-items: center; gap: 0.15rem; margin: 0.4rem 0 1rem; padding: 1rem; border: 1px solid rgba(23, 42, 58, 0.18); border-radius: 10px; text-align: center; }
+        .score-card strong { font-size: 2.7rem; line-height: 1.1; }
+        .score-card span { font-weight: 700; }
+        .extra-reads { padding-top: 0.65rem; border-top: 1px solid #d5dfe5; }
+        .extra-reads h3 { margin: 0 0 0.4rem; font-size: 0.95rem; }
+        .extra-reads ul { margin: 0; padding-left: 1.2rem; }
+        .extra-reads li { margin: 0.35rem 0; }
+        .extra-reads a { color: #145b85; }
+        .quiz-home-link { margin: 0.85rem 0 0; }
+        .confetti-layer { position: fixed; z-index: 20; inset: 0; overflow: hidden; pointer-events: none; }
+        .confetti-piece { position: absolute; top: -14px; width: 9px; height: 15px; animation: confetti-fall 2.4s ease-in forwards; }
+        @keyframes confetti-fall { to { transform: translate3d(var(--drift), 110vh, 0) rotate(760deg); } }
+        .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+        @media (max-width: 680px) {
+            .page-header { align-items: flex-start; }
+            .page-header h1 { font-size: 1.15rem; }
+            .desktop-frame { height: calc(100vh - 190px); min-height: 520px; }
+            .desktop-icons { top: 3.1rem; left: 0.2rem; }
+            .desktop-icon { width: 70px; }
+            .window { width: calc(100% - 88px); max-height: calc(100% - 92px); left: calc(50% + 32px); }
+            .window-content { padding: 0.65rem; }
+            .task-item { max-width: 95px; }
+            .simulation-stamp { left: 0.8rem; right: auto; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div>
+            <h1>Safer Online: Desktop Safety Simulator</h1>
+            <p>A guided, fictional desktop for practicing privacy decisions.</p>
+        </div>
+        <div class="header-actions">
+            <a class="reset-button" href="index.md">Return home</a>
+            <button id="reset-simulation" class="reset-button" type="button">Restart lesson</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="desktop-frame" aria-label="Interactive simulated desktop">
+            <div class="desktop-icons" aria-label="Desktop shortcuts">
+                <button id="browser-shortcut" class="desktop-icon" type="button" aria-label="Open simulated browser">
+                    <span class="icon-art" aria-hidden="true">🌐</span><span>Browser</span>
+                </button>
+                <button id="vpn-shortcut" class="desktop-icon" type="button" aria-label="Open simulated ClearPath VPN app" hidden>
+                    <span class="icon-art" aria-hidden="true">🛡️</span><span>ClearPath VPN</span>
+                </button>
+                <button id="cloud-shortcut" class="desktop-icon" type="button" aria-label="Open simulated cloud files" hidden>
+                    <span class="icon-art" aria-hidden="true">☁️</span><span>Cloud files</span>
+                </button>
+                <button id="recycle-shortcut" class="desktop-icon" type="button" aria-label="Recycle bin, simulated">
+                    <span class="icon-art" aria-hidden="true">🗑️</span><span>Recycle Bin</span>
+                </button>
+            </div>
+            <div class="simulation-stamp">SIMULATION ONLY · NO DATA LEAVES THIS PAGE</div>
+
+            <section id="browser-window" class="window" aria-label="Simulated browser window">
+                <div class="window-titlebar"><span id="browser-title">Browser — Search</span><button class="window-close" type="button" data-close="browser-window" aria-label="Close browser">×</button></div>
+                <div class="window-content">
+                    <div class="browser-toolbar"><span aria-hidden="true">←</span><span aria-hidden="true">→</span><span class="browser-address">https://search.example/simulated</span><span aria-hidden="true">↻</span></div>
+                    <div id="vpn-search-view">
+                        <h2 class="browser-search">Search results: vpn</h2>
+                        <p class="search-meta">About 8,240,000 simulated results (0.42 seconds)</p>
+                        <article class="search-result">
+                            <h3><button class="result-button" type="button" id="mozilla-result">ClearPath VPN: straightforward privacy from Northline</button></h3>
+                            <p class="domain">https://clearpath-vpn.example/</p>
+                            <p>Clear operator identity: Northline Privacy Ltd. Clear privacy policy, published independent audit summary, transparent pricing, and documented support channels. Fictional training example: verify such claims for real providers.</p>
+                        </article>
+                        <article class="search-result">
+                            <h3><button class="result-button risky-result" type="button">FREE VPN - UNLIMITED, NO RULES!!!</button></h3>
+                            <p class="domain">https://totally-free-vpn-download.biz.example/</p>
+                            <p><span class="warning-label">Red flags:</span> exaggerated promises, unknown publisher, and a download from an unfamiliar domain.</p>
+                        </article>
+                        <article class="search-result">
+                            <h3><button class="result-button risky-result" type="button">Secret Tunnel VPN: 100% anonymous forever</button></h3>
+                            <p class="domain">https://vpn-cracked-premium-now.example/</p>
+                            <p><span class="warning-label">Red flags:</span> cracked software claims, no identifiable company, and impossible privacy guarantees.</p>
+                        </article>
+                        <article class="search-result">
+                            <h3><button class="result-button risky-result" type="button">FastShield Free Proxy — install this helper</button></h3>
+                            <p class="domain">https://click-here-prize-download.example/</p>
+                            <p><span class="warning-label">Red flags:</span> unrelated domain, vague product details, and pressure to install an extra helper.</p>
+                        </article>
+                        <article class="search-result">
+                            <h3><button class="result-button risky-result" type="button">One-click VPN! Get paid to browse!</button></h3>
+                            <p class="domain">https://free-money-vpn-rewards.example/</p>
+                            <p><span class="warning-label">Red flags:</span> rewards bait and no clear privacy policy or organization.</p>
+                        </article>
+                    </div>
+                    <div id="vpn-product-view" hidden>
+                        <div class="product-preview">
+                            <p class="search-meta">CLEARPATH VPN · NORTHLINE PRIVACY LTD. · FICTIONAL TRAINING PROFILE</p>
+                            <h2>Review before you download</h2>
+                            <p>This lesson represents a download with a desktop shortcut only. It does not download or install an application.</p>
+                            <p>In real life, verify the publisher and domain, read the privacy policy, and compare independent reviews before choosing any VPN.</p>
+                            <p>Reliability cues to look for: a named company, clear privacy terms, independent audits, transparent pricing, and reachable support. This provider and its claims are fictional.</p>
+                            <button id="simulate-download" class="action-button primary" type="button">Download (simulation)</button>
+                            <p id="download-status" class="process-status" aria-live="polite">Ready to download.</p>
+                            <progress id="download-progress" class="operation-progress" max="100" value="0" hidden>0%</progress>
+                        </div>
+                    </div>
+                    <div id="social-view" hidden>
+                        <div class="mock-social">
+                            <div class="social-header">Chatterbox · simulated social network</div>
+                            <div class="social-body">
+                                <h2>Good afternoon, Alex!</h2>
+                                <p>Your neighborhood feed is ready. Add a location to see nearby posts and local recommendations.</p>
+                                <div id="location-card" class="location-card">
+                                    <strong>Chatterbox would like to know your location</strong>
+                                    <p>Location access is simulated. This page does not read your device location.</p>
+                                    <div class="location-actions"><button id="share-location" class="action-button" type="button">Share my location</button><button id="deny-location" class="action-button primary" type="button">Not now</button></div>
+                                </div>
+                                <div id="age-verification" class="location-card" hidden>
+                                    <p class="search-meta">CHATTERBOX · AGE CHECK · SIMULATED</p>
+                                    <h2>Verify you are old enough</h2>
+                                    <p>To continue, this fictional service asks you to show your face to its camera. A face can identify you even outside this account.</p>
+                                    <p>No camera will be activated here. This is a mock decision screen only.</p>
+                                    <div class="location-actions"><button id="fake-camera" class="action-button primary" type="button">Use camera to verify age</button><button id="exit-age-check" class="action-button" type="button">Exit age verification</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="vpn-window" class="window" aria-label="Simulated VPN app">
+                <div class="window-titlebar"><span>Secure VPN — Training App</span><button class="window-close" type="button" data-close="vpn-window" aria-label="Close VPN app">×</button></div>
+                <div class="window-content">
+                    <div class="product-preview">
+                        <p class="search-meta">CLEARPATH VPN · NORTHLINE PRIVACY LTD. · SIMULATION</p>
+                        <h2>Secure connection</h2>
+                        <p id="vpn-connection-status" aria-live="polite">Status: Disconnected</p>
+                        <p>Server: Example City · Protocol: Encrypted tunnel (demo)</p>
+                        <button id="connect-vpn" class="action-button primary" type="button">Connect</button>
+                        <progress id="connection-progress" class="operation-progress" max="100" value="0" hidden>0%</progress>
+                    </div>
+                </div>
+            </section>
+
+            <section id="cloud-window" class="window" aria-label="Simulated cloud storage">
+                <div class="window-titlebar"><span>SkyShelf Cloud — Training Account</span><button class="window-close" type="button" data-close="cloud-window" aria-label="Close cloud storage">×</button></div>
+                <div class="window-content">
+                    <h2>Your files</h2>
+                    <p>Training account · fictional sample files, not real uploads</p>
+                    <ul id="cloud-files" class="cloud-files"><li>family-photo-sample.jpg</li><li>tax-return-demo.pdf</li><li>project-notes-example.txt</li></ul>
+                    <button id="delete-cloud-files" class="action-button danger" type="button">Delete simulated cloud files</button>
+                </div>
+            </section>
+
+            <aside id="cloud-notice" class="cloud-notice" aria-live="polite">
+                <strong>SkyShelf Cloud</strong>
+                Your files have been successfully uploaded! <span>(simulation)</span>
+                <button id="open-cloud-files" class="action-button" type="button">Review files</button>
+            </aside>
+
+            <div class="taskbar" aria-label="Simulated taskbar">
+                <button class="start-button" type="button" id="taskbar-start">Start</button>
+                <button class="task-item" type="button" data-window="browser-window" hidden>Browser</button>
+                <button class="task-item" type="button" data-window="vpn-window" hidden>Secure VPN</button>
+                <button class="task-item" type="button" data-window="cloud-window" hidden>Cloud files</button>
+                <span class="task-clock" id="task-clock">12:00 PM</span>
+            </div>
+        </section>
+
+        <section class="guide-strip" aria-live="polite">
+            <span class="guide-number" id="step-number">1</span>
+            <p><strong id="guide-title">Start in the browser</strong><span id="guide-copy">Open the Browser icon on the desktop to search for a VPN.</span></p>
+        </section>
+    </main>
+
+    <dialog id="lesson-dialog" class="lesson-dialog" aria-labelledby="dialog-title">
+        <div class="dialog-titlebar" id="dialog-title">Safety note</div>
+        <div class="dialog-body" id="dialog-body"></div>
+        <div class="dialog-actions"><button id="dialog-continue" class="action-button primary" type="button">Continue</button></div>
+    </dialog>
+    <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
+
+    <script>
+        (() => {
+            const byId = (id) => document.getElementById(id);
+            const dialog = byId("lesson-dialog");
+            const dialogTitle = byId("dialog-title");
+            const dialogBody = byId("dialog-body");
+            const dialogContinue = byId("dialog-continue");
+            const browserWindow = byId("browser-window");
+            const vpnWindow = byId("vpn-window");
+            const cloudWindow = byId("cloud-window");
+            const taskItems = [...document.querySelectorAll(".task-item")];
+            let stage = 1;
+            let nextAction = null;
+            let locationAnswered = false;
+            let ageAnswered = false;
+            let cloudDeleted = false;
+            let downloadTimer = null;
+            let connectionTimer = null;
+            let cloudNoticeTimer = null;
+            let quizIndex = 0;
+            let quizScore = 0;
+
+            const sources = {
+                freeVpn: "https://www.mozilla.org/en-US/products/vpn/resource-center/risks-of-using-a-free-vpn/",
+                vpnSecurity: "https://www.paloaltonetworks.com/cyberpedia/vpn-security",
+                location: "https://its.fsu.edu/article/location-sharing-risks",
+                ageVerification: "https://action.freespeechcoalition.com/age-verification-bills/",
+                cloud: "https://www.sentinelone.com/cybersecurity-101/cloud-security/security-risks-of-cloud-computing/"
+            };
+            const quizQuestions = [
+                { prompt: "Which is a good sign when evaluating a VPN provider?", answers: ["It promises perfect anonymity forever", "It identifies its operator and publishes clear privacy terms", "It requires installing an unknown helper"], correct: 1, feedback: "Check who operates the service, read its privacy terms, and look for independent evidence such as audits." },
+                { prompt: "What can a VPN generally do when connected?", answers: ["Encrypt traffic between your device and the VPN server", "Block every scam and malicious download", "Make all activity anonymous to every service"], correct: 0, feedback: "A VPN can encrypt the connection to its server and change the public IP services see, but it does not prevent every online threat." },
+                { prompt: "Does a VPN hide GPS location shared directly with an app?", answers: ["Yes, always", "Only on public Wi-Fi", "No; GPS and app permissions are separate"], correct: 2, feedback: "A VPN does not block GPS or undo permissions granted to an app." },
+                { prompt: "Why can an app's location history be sensitive?", answers: ["It can reveal routines and places such as home or work", "It only shows the current weather", "It cannot be linked to an account"], correct: 0, feedback: "Repeated location records can reveal patterns, routines, and sensitive places." },
+                { prompt: "What is a privacy concern with age checks that request a face scan?", answers: ["A face can be replaced like a password", "Face data could be retained, exposed, or used for profiling", "A face scan contains no identifying information"], correct: 1, feedback: "Biometric data is difficult to replace if exposed, and providers may retain or use it in ways users did not expect." },
+                { prompt: "Why might someone question an age-verification law or service?", answers: ["Age checks may help protect minors, but identity checks can reduce privacy and anonymity", "All age checks are guaranteed to be anonymous", "Age checks never involve sensitive information"], correct: 0, feedback: "Age-verification proposals often aim to protect minors, while critics warn about identity collection, breaches, and less anonymous access." },
+                { prompt: "A site unexpectedly asks to use your camera for age verification. What is a careful response?", answers: ["Allow it immediately because the site asked", "Check the provider, what it collects and retains, and whether an alternative exists", "Upload a photo of an ID to a different link"], correct: 1, feedback: "Before sharing face data, verify who operates the service, its retention and sharing practices, and whether there is a non-biometric option." },
+                { prompt: "Which is a realistic cloud-storage risk?", answers: ["Account compromise or incorrect sharing settings can expose files", "Cloud files can never be lost", "Deleting one copy always removes every copy everywhere"], correct: 0, feedback: "Compromised accounts, misconfigured sharing, outages, and provider incidents can expose or disrupt access to files." },
+                { prompt: "How should sensitive files be protected?", answers: ["Keep the only copy in one cloud account", "Use encrypted local storage and keep a separate backup", "Share the login with trusted contacts"], correct: 1, feedback: "Use encryption and maintain a separate backup; avoid relying on a single account or single copy." }
+            ];
+
+            function setGuide(step, title, copy) {
+                byId("step-number").textContent = String(step);
+                byId("guide-title").textContent = title;
+                byId("guide-copy").textContent = copy;
+            }
+
+            function showDialog(title, html, buttonText, action) {
+                dialogTitle.textContent = title;
+                dialogBody.innerHTML = html;
+                dialogContinue.textContent = buttonText;
+                nextAction = action || null;
+                if (!dialog.open) dialog.showModal();
+            }
+
+            dialogContinue.addEventListener("click", () => {
+                const action = nextAction;
+                nextAction = null;
+                dialog.close();
+                if (action) action();
+            });
+
+            function openWindow(windowElement) {
+                [browserWindow, vpnWindow, cloudWindow].forEach((item) => item.classList.remove("is-open"));
+                windowElement.classList.add("is-open");
+                taskItems.forEach((item) => { item.hidden = item.dataset.window !== windowElement.id; });
+            }
+
+            function closeWindow(windowElement) {
+                windowElement.classList.remove("is-open");
+                taskItems.forEach((item) => {
+                    if (item.dataset.window === windowElement.id) item.hidden = true;
+                });
+            }
+
+            document.querySelectorAll("[data-close]").forEach((button) => {
+                button.addEventListener("click", () => closeWindow(byId(button.dataset.close)));
+            });
+            taskItems.forEach((button) => button.addEventListener("click", () => openWindow(byId(button.dataset.window))));
+
+            function openBrowser() {
+                openWindow(browserWindow);
+                if (stage === 1) {
+                    setGuide(1, "Spot a trustworthy VPN", "Compare the search results. Choose the result with a known publisher and a real, verifiable domain.");
+                    showDialog("Check before choosing a VPN",
+                        `<p>Some unreliable free VPNs may track activity, show intrusive ads, or handle data poorly. Read the provider’s privacy policy and check independent information before trusting it.</p><p>Source: <a class="source-link" href="${sources.freeVpn}" target="_blank" rel="noopener noreferrer">Mozilla: Risks of using a free VPN</a></p>`,
+                        "Review the results");
+                    stage = 2;
+                } else if (stage === 6 && !locationAnswered) {
+                    byId("vpn-search-view").hidden = true;
+                    byId("vpn-product-view").hidden = true;
+                    byId("social-view").hidden = false;
+                    byId("browser-title").textContent = "Browser — Chatterbox";
+                    setGuide(3, "Review the location request", "The mock social app asks for location. Consider whether it needs that access, then choose whether to share.");
+                    showDialog("Location sharing has a privacy cost",
+                        `<p>Apps may use location to build a pattern of where you live, work, and travel. Location data can enable profiling, be shared or sold, or expose you when posts are public. In this simulation, location is never collected.</p><p>A VPN can mask your public IP address and reduce rough location estimates based on that IP. It does <strong>not</strong> hide GPS, undo app permissions, or prevent account-based tracking.</p><p>Source: <a class="source-link" href="${sources.location}" target="_blank" rel="noopener noreferrer">Florida State University: Location-sharing risks</a></p>`,
+                        "Review the request");
+                    stage = 7;
+                }
+            }
+
+            byId("browser-shortcut").addEventListener("click", openBrowser);
+            byId("mozilla-result").addEventListener("click", () => {
+                byId("vpn-search-view").hidden = true;
+                byId("vpn-product-view").hidden = false;
+                byId("browser-title").textContent = "Browser — Mozilla VPN preview";
+            });
+            document.querySelectorAll(".risky-result").forEach((button) => button.addEventListener("click", () => {
+                showDialog("This result has warning signs",
+                    `<p>Unknown publishers, strange domains, exaggerated claims, and pressure to install software are reasons to stop and investigate. Don’t enter personal details or download from a site you cannot verify.</p><p>Source: <a class="source-link" href="${sources.freeVpn}" target="_blank" rel="noopener noreferrer">Mozilla: Risks of using a free VPN</a></p>`,
+                    "Back to results");
+            }));
+
+            byId("simulate-download").addEventListener("click", () => {
+                const downloadButton = byId("simulate-download");
+                const progress = byId("download-progress");
+                const status = byId("download-status");
+                const startedAt = Date.now();
+                const duration = 2400;
+                downloadButton.disabled = true;
+                progress.hidden = false;
+                status.textContent = "Downloading ClearPath VPN (simulation)...";
+                downloadTimer = setInterval(() => {
+                    const percent = Math.min(100, Math.round(((Date.now() - startedAt) / duration) * 100));
+                    progress.value = percent;
+                    status.textContent = `Downloading ClearPath VPN (simulation)... ${percent}%`;
+                    if (percent === 100) {
+                        clearInterval(downloadTimer);
+                        downloadTimer = null;
+                        byId("vpn-shortcut").hidden = false;
+                        stage = 3;
+                        closeWindow(browserWindow);
+                        setGuide(2, "Open and connect the VPN", "ClearPath VPN has finished its simulated download. Open its desktop shortcut, then choose Connect.");
+                        showDialog("Download complete (simulation)",
+                            "<p>The fictional ClearPath VPN shortcut is now on the desktop. This delay was simulated; no software was downloaded or installed.</p>",
+                            "Go to desktop");
+                    }
+                }, 80);
+            });
+
+            byId("vpn-shortcut").addEventListener("click", () => {
+                if (stage < 3) return;
+                openWindow(vpnWindow);
+            });
+
+            byId("connect-vpn").addEventListener("click", () => {
+                if (stage !== 3) return;
+                const connectButton = byId("connect-vpn");
+                const progress = byId("connection-progress");
+                const status = byId("vpn-connection-status");
+                const startedAt = Date.now();
+                const duration = 1900;
+                connectButton.disabled = true;
+                status.textContent = "Status: Connecting (simulation)...";
+                progress.hidden = false;
+                connectionTimer = setInterval(() => {
+                    const percent = Math.min(100, Math.round(((Date.now() - startedAt) / duration) * 100));
+                    progress.value = percent;
+                    if (percent === 100) {
+                        clearInterval(connectionTimer);
+                        connectionTimer = null;
+                        stage = 4;
+                        status.textContent = "Status: Connected (simulation)";
+                        connectButton.textContent = "Connected";
+                        setGuide(2, "VPN connected", "The demo tunnel is on. Continue to learn what VPN protection can and cannot do.");
+                        showDialog("What a VPN can protect",
+                            `<p>A VPN encrypts traffic between your device and the VPN server and can make your public IP appear to be the server’s IP. It can help protect traffic on untrusted networks and reduce IP-based location exposure.</p><p>A VPN is not anonymity: the VPN provider may see connection information, and it does not stop phishing, malware, tracking cookies, GPS collection, or unsafe account settings.</p><p>Source: <a class="source-link" href="${sources.vpnSecurity}" target="_blank" rel="noopener noreferrer">Palo Alto Networks: VPN security</a></p>`,
+                            "Continue to the browser", () => {
+                                closeWindow(vpnWindow);
+                                stage = 6;
+                                setGuide(3, "Open the browser again", "Reopen Browser on the desktop to visit the simulated social app.");
+                            });
+                    } else {
+                        status.textContent = `Status: Connecting (simulation)... ${percent}%`;
+                    }
+                }, 80);
+            });
+
+            byId("share-location").addEventListener("click", () => answerLocation(true));
+            byId("deny-location").addEventListener("click", () => answerLocation(false));
+            byId("fake-camera").addEventListener("click", warnAboutFaceVerification);
+            byId("exit-age-check").addEventListener("click", exitAgeVerification);
+
+            function answerLocation(shared) {
+                if (locationAnswered) return;
+                locationAnswered = true;
+                byId("share-location").disabled = true;
+                byId("deny-location").disabled = true;
+                byId("share-location").textContent = shared ? "Shared (simulation)" : "Share my location";
+                byId("deny-location").textContent = shared ? "Not now" : "Declined";
+                stage = 8;
+                byId("location-card").hidden = true;
+                byId("age-verification").hidden = false;
+                if (shared) {
+                    showDialog("You shared your location (simulation)",
+                        `<p>Location access can reveal routines and sensitive places such as home, work, or medical visits. Apps may use it for profiling, share or sell it to partners, or expose it through public posts. Precise location can create safety risks when it reaches the wrong people.</p><p>Your VPN does not hide GPS or location shared directly with an app. You can review app permissions and remove access when it is not needed.</p><p>Source: <a class="source-link" href="${sources.location}" target="_blank" rel="noopener noreferrer">Florida State University: Location-sharing risks</a></p>`,
+                        "Continue", showAgeVerification);
+                } else {
+                    showAgeVerification();
+                }
+            }
+
+            function showAgeVerification() {
+                setGuide(4, "Review the face-verification request", "The mock service wants to see your face. Consider the privacy implications before choosing.");
+            }
+
+            function warnAboutFaceVerification() {
+                if (ageAnswered) return;
+                showDialog("Pause before showing your face",
+                    `<p>A face image or biometric template is highly sensitive: unlike a password, your face cannot be changed after exposure. A provider could retain face data, link it to an account, or use it for profiling. If the provider is breached or shares data in ways you did not expect, your face data may be exposed or misused.</p><p>Lawmakers in several jurisdictions are advancing age-verification proposals intended to make online spaces safer for minors. Critics warn that requiring an ID or face check can create sensitive data stores, increase exposure in a breach, and make anonymous access to lawful content harder. This is the trade-off: stronger age controls may also mean less privacy.</p><p>Do not assume a provider is trustworthy just because it requests a face scan. Check who operates the service, what is collected, how long it is retained, who it is shared with, and whether there is a non-biometric alternative.</p><p>This is a simulated prompt only; no camera is opened and no image is captured.</p><p>Source: <a class="source-link" href="${sources.ageVerification}" target="_blank" rel="noopener noreferrer">Free Speech Coalition: Age verification bills</a></p>`,
+                    "Return to age-check options");
+            }
+
+            function exitAgeVerification() {
+                if (ageAnswered) return;
+                ageAnswered = true;
+                byId("fake-camera").disabled = true;
+                byId("exit-age-check").disabled = true;
+                byId("exit-age-check").textContent = "Exited (simulation)";
+                setGuide(4, "Age check exited", "You avoided sharing biometric information with an unverified service.");
+                showDialog("You chose not to submit a face scan",
+                    `<p>That is a privacy-protective choice. A face image or biometric template can identify you and cannot be replaced like a password. If collected, it could be stored longer than expected, exposed in a data leak, linked across accounts, or used to profile you. A provider should not be trusted with your face by default; review its operator, retention, deletion, sharing, and appeal practices first.</p><p>Lawmaking in several jurisdictions aims to make online spaces safer for minors through age checks. But requiring ID or face verification can create sensitive data stores, increase breach risks, and make anonymous access to lawful content harder. This is a real trade-off between age protections and privacy.</p><p>This choice does not make every service risk-free, but it avoids giving this fictional app your face. No camera is opened and no image is captured in this lesson.</p><p>Source: <a class="source-link" href="${sources.ageVerification}" target="_blank" rel="noopener noreferrer">Free Speech Coalition: Age verification bills</a></p>`,
+                    "Continue", scheduleCloudNotice);
+            }
+
+            function scheduleCloudNotice() {
+                clearTimeout(cloudNoticeTimer);
+                setGuide(5, "A cloud upload is pending", "Wait a moment for a fictional notification about sample files.");
+                cloudNoticeTimer = setTimeout(() => {
+                    if (cloudDeleted) return;
+                    setGuide(5, "A cloud upload appeared", "A fictional notification says sample files were uploaded. Review the cloud copy, then delete the simulated files.");
+                    byId("cloud-notice").classList.add("is-open");
+                    byId("cloud-shortcut").hidden = false;
+                }, 2500);
+            }
+
+            byId("open-cloud-files").addEventListener("click", () => {
+                byId("cloud-notice").classList.remove("is-open");
+                openWindow(cloudWindow);
+            });
+            byId("cloud-shortcut").addEventListener("click", () => openWindow(cloudWindow));
+
+            byId("delete-cloud-files").addEventListener("click", () => {
+                if (cloudDeleted) return;
+                cloudDeleted = true;
+                byId("delete-cloud-files").disabled = true;
+                byId("delete-cloud-files").textContent = "Sample files deleted";
+                byId("cloud-files").hidden = true;
+                setGuide(5, "Think about storage and backups", "The fictional cloud copies are deleted. Review the storage tradeoffs before wrapping up.");
+                showDialog("Cloud storage: convenience and risk",
+                    `<p>Cloud services can be useful, but account compromise, incorrect sharing settings, service outages, and provider-side incidents can expose or make files unavailable. Keep sensitive originals in encrypted local storage and maintain a separate backup; don’t rely on one copy in one place.</p><p>Deleting a synced cloud copy may not remove copies already downloaded, shared, or retained in backups. In this demo, only the fictional sample list is removed.</p><p>Source: <a class="source-link" href="${sources.cloud}" target="_blank" rel="noopener noreferrer">SentinelOne: Security risks of cloud computing</a></p>`,
+                    "Finish the lesson", finishLesson);
+            });
+
+            function finishLesson() {
+                stage = 9;
+                setGuide(6, "Lesson complete", "You practiced checking a VPN provider, limiting location access, and thinking carefully about cloud copies.");
+                launchConfetti();
+                showDialog("Your safety checklist",
+                    `<p>You completed the simulated desktop lesson. Key takeaways:</p><ul class="final-summary"><li>Verify VPN providers and understand their privacy limits.</li><li>Grant location access only when needed; VPNs do not hide GPS or stop account tracking.</li><li>Protect sensitive files with encryption and more than one backup.</li><li>Check permissions, sharing settings, and privacy policies before trusting a service.</li></ul><p>Nothing was installed, uploaded, or collected by this simulation.</p>`,
+                    "Start 9-question quiz", startQuiz);
+            }
+
+            function startQuiz() {
+                quizIndex = 0;
+                quizScore = 0;
+                setGuide(7, "Safety knowledge check", "Answer nine short questions to review the ideas from the simulation.");
+                showQuizQuestion();
+            }
+
+            function showQuizQuestion() {
+                const question = quizQuestions[quizIndex];
+                const answerOptions = question.answers.map((answer, answerIndex) =>
+                    `<label class="quiz-option"><input type="radio" name="quiz-answer" value="${answerIndex}"><span>${answer}</span></label>`
+                ).join("");
+                showDialog("Safety knowledge check",
+                    `<p class="quiz-progress">Question ${quizIndex + 1} of ${quizQuestions.length}</p><fieldset class="quiz-question"><legend>${question.prompt}</legend>${answerOptions}</fieldset>`,
+                    "Check answer", submitQuizAnswer);
+            }
+
+            function submitQuizAnswer() {
+                const selectedAnswer = document.querySelector('input[name="quiz-answer"]:checked');
+                if (!selectedAnswer) {
+                    showDialog("Choose an answer", "<p>Select an option before continuing.</p>", "Return to question", showQuizQuestion);
+                    return;
+                }
+                const question = quizQuestions[quizIndex];
+                const isCorrect = Number(selectedAnswer.value) === question.correct;
+                if (isCorrect) quizScore += 1;
+                showDialog(isCorrect ? "Correct" : "Review this idea",
+                    `<p class="quiz-feedback">${question.feedback}</p><p>Score so far: ${quizScore} of ${quizIndex + 1}.</p>`,
+                    quizIndex + 1 === quizQuestions.length ? "See your score" : "Next question", () => {
+                        quizIndex += 1;
+                        if (quizIndex < quizQuestions.length) showQuizQuestion();
+                        else showQuizResults();
+                    });
+            }
+
+            function scoreAppearance(score, total) {
+                const ratio = score / total;
+                const red = [178, 61, 54];
+                const yellow = [218, 181, 56];
+                const green = [48, 126, 78];
+                const first = ratio < 0.5 ? red : yellow;
+                const second = ratio < 0.5 ? yellow : green;
+                const amount = ratio < 0.5 ? ratio * 2 : (ratio - 0.5) * 2;
+                const channels = first.map((channel, index) => Math.round(channel + (second[index] - channel) * amount));
+                const hex = `#${channels.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+                const luminance = channels.map((channel) => {
+                    const normalized = channel / 255;
+                    return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+                }).reduce((totalLuminance, channel, index) => totalLuminance + channel * [0.2126, 0.7152, 0.0722][index], 0);
+                return { background: hex, foreground: luminance > 0.3 ? "#172a3a" : "#ffffff" };
+            }
+
+            function showQuizResults() {
+                const message = quizScore === quizQuestions.length
+                    ? "Excellent work. You recognized the key privacy and security trade-offs."
+                    : "Review the lesson notes for any topics you want to revisit.";
+                const scoreColor = scoreAppearance(quizScore, quizQuestions.length);
+                setGuide(7, "Quiz complete", `Final score: ${quizScore} of ${quizQuestions.length}.`);
+                showDialog("Quiz complete",
+                    `<div class="score-card" style="background-color:${scoreColor.background};color:${scoreColor.foreground}"><strong>${quizScore}/${quizQuestions.length}</strong><span>${quizScore} correct · ${quizQuestions.length} questions</span></div><p>${message}</p><section class="extra-reads"><h3>Extra reads</h3><ul><li><a href="${sources.freeVpn}" target="_blank" rel="noopener noreferrer">Mozilla: Risks of using a free VPN</a></li><li><a href="${sources.vpnSecurity}" target="_blank" rel="noopener noreferrer">Palo Alto Networks: VPN security</a></li><li><a href="${sources.location}" target="_blank" rel="noopener noreferrer">Florida State University: Location-sharing risks</a></li><li><a href="${sources.ageVerification}" target="_blank" rel="noopener noreferrer">Free Speech Coalition: Age verification bills</a></li><li><a href="${sources.cloud}" target="_blank" rel="noopener noreferrer">SentinelOne: Security risks of cloud computing</a></li></ul></section><p class="quiz-home-link"><a class="action-button" href="index.md">Return home</a></p>`,
+                    "Finish");
+            }
+
+            function launchConfetti() {
+                const layer = byId("confetti-layer");
+                const colors = ["#e8a343", "#278b83", "#d94c45", "#416f9e", "#e6d15a", "#f0f2ed"];
+                for (let pieceIndex = 0; pieceIndex < 90; pieceIndex += 1) {
+                    const piece = document.createElement("span");
+                    piece.className = "confetti-piece";
+                    piece.style.left = `${Math.random() * 100}%`;
+                    piece.style.backgroundColor = colors[pieceIndex % colors.length];
+                    piece.style.animationDelay = `${Math.random() * 0.8}s`;
+                    piece.style.setProperty("--drift", `${Math.round(Math.random() * 220 - 110)}px`);
+                    layer.appendChild(piece);
+                }
+                setTimeout(() => layer.replaceChildren(), 3800);
+            }
+
+            byId("recycle-shortcut").addEventListener("click", () => {
+                showDialog("Recycle Bin (simulation)", "<p>This empty bin is part of the fictional desktop. No real files are available here.</p>", "Close");
+            });
+            byId("taskbar-start").addEventListener("click", () => {
+                showDialog("Training desktop", "<p>Use the desktop shortcuts to complete the guided privacy lesson. The apps and files are simulated.</p>", "Continue");
+            });
+
+            function resetSimulation() {
+                clearInterval(downloadTimer);
+                clearInterval(connectionTimer);
+                clearTimeout(cloudNoticeTimer);
+                downloadTimer = null;
+                connectionTimer = null;
+                cloudNoticeTimer = null;
+                if (dialog.open) dialog.close();
+                [browserWindow, vpnWindow, cloudWindow].forEach((item) => item.classList.remove("is-open"));
+                taskItems.forEach((item) => { item.hidden = true; });
+                byId("vpn-shortcut").hidden = true;
+                byId("cloud-shortcut").hidden = true;
+                byId("cloud-notice").classList.remove("is-open");
+                byId("vpn-search-view").hidden = false;
+                byId("vpn-product-view").hidden = true;
+                byId("social-view").hidden = true;
+                byId("location-card").hidden = false;
+                byId("age-verification").hidden = true;
+                byId("browser-title").textContent = "Browser — Search";
+                byId("vpn-connection-status").textContent = "Status: Disconnected";
+                byId("connect-vpn").textContent = "Connect";
+                byId("connect-vpn").disabled = false;
+                byId("connection-progress").hidden = true;
+                byId("connection-progress").value = 0;
+                byId("download-progress").hidden = true;
+                byId("download-progress").value = 0;
+                byId("download-status").textContent = "Ready to download.";
+                byId("simulate-download").disabled = false;
+                byId("share-location").disabled = false;
+                byId("deny-location").disabled = false;
+                byId("share-location").textContent = "Share my location";
+                byId("deny-location").textContent = "Not now";
+                byId("fake-camera").disabled = false;
+                byId("exit-age-check").disabled = false;
+                byId("exit-age-check").textContent = "Exit age verification";
+                byId("cloud-files").hidden = false;
+                byId("delete-cloud-files").disabled = false;
+                byId("delete-cloud-files").textContent = "Delete simulated cloud files";
+                byId("confetti-layer").replaceChildren();
+                stage = 1;
+                locationAnswered = false;
+                ageAnswered = false;
+                cloudDeleted = false;
+                quizIndex = 0;
+                quizScore = 0;
+                setGuide(1, "Start in the browser", "Open the Browser icon on the desktop to search for a VPN.");
+            }
+
+            byId("reset-simulation").addEventListener("click", resetSimulation);
+            function updateClock() {
+                byId("task-clock").textContent = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(new Date());
+            }
+            updateClock();
+            setInterval(updateClock, 30000);
+        })();
+    </script>
+</body>
+</html>
