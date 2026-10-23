@@ -317,6 +317,7 @@
                 vpnSecurity: "https://www.paloaltonetworks.com/cyberpedia/vpn-security",
                 location: "https://its.fsu.edu/article/location-sharing-risks",
                 ageVerification: "https://action.freespeechcoalition.com/age-verification-bills/",
+                ageVerificationCrs: "https://www.congress.gov/crs_external_products/R/HTML/R47884.html",
                 cloud: "https://www.sentinelone.com/cybersecurity-101/cloud-security/security-risks-of-cloud-computing/"
             };
             const quizQuestions = [
@@ -330,6 +331,7 @@
                 { prompt: "Which is a realistic cloud-storage risk?", answers: ["Account compromise or incorrect sharing settings can expose files", "Cloud files can never be lost", "Deleting one copy always removes every copy everywhere"], correct: 0, feedback: "Compromised accounts, misconfigured sharing, outages, and provider incidents can expose or disrupt access to files." },
                 { prompt: "How should sensitive files be protected?", answers: ["Keep the only copy in one cloud account", "Use encrypted local storage and keep a separate backup", "Share the login with trusted contacts"], correct: 1, feedback: "Use encryption and maintain a separate backup; avoid relying on a single account or single copy." }
             ];
+            const ageVerificationPolicy = `<p>The Congressional Research Service notes that no federal statute explicitly requires website operators to verify users' ages, but federal and state laws may incentivize them to do so. It also discusses indirect effects from other online-safety or data-privacy measures, plus policy options such as research funding, agency guidance, and state-run systems. A law need not directly mandate face scans to help make age checks more widespread. <a class="source-link" href="${sources.ageVerificationCrs}" target="_blank" rel="noopener noreferrer">Congressional Research Service: Identifying Minors Online (R47884)</a>.</p>`;
 
             function setGuide(step, title, copy) {
                 byId("step-number").textContent = String(step);
@@ -343,6 +345,10 @@
                 dialogContinue.textContent = buttonText;
                 nextAction = action || null;
                 if (!dialog.open) dialog.showModal();
+            }
+
+            function showAgeRiskDialog(title, html, buttonText, action) {
+                showDialog(title, `${html}${ageVerificationPolicy}`, buttonText, action);
             }
 
             dialogContinue.addEventListener("click", () => {
@@ -498,7 +504,7 @@
 
             function warnAboutFaceVerification() {
                 if (ageAnswered) return;
-                showDialog("Pause before showing your face",
+                showAgeRiskDialog("Pause before showing your face",
                     `<p>A face image or biometric template is highly sensitive: unlike a password, your face cannot be changed after exposure. A provider could retain face data, link it to an account, or use it for profiling. If the provider is breached or shares data in ways you did not expect, your face data may be exposed or misused.</p><p>Lawmakers in several jurisdictions are advancing age-verification proposals intended to make online spaces safer for minors. Critics warn that requiring an ID or face check can create sensitive data stores, increase exposure in a breach, and make anonymous access to lawful content harder. This is the trade-off: stronger age controls may also mean less privacy.</p><p>Do not assume a provider is trustworthy just because it requests a face scan. Check who operates the service, what is collected, how long it is retained, who it is shared with, and whether there is a non-biometric alternative.</p><p>This is a simulated prompt only; no camera is opened and no image is captured.</p><p>Source: <a class="source-link" href="${sources.ageVerification}" target="_blank" rel="noopener noreferrer">Free Speech Coalition: Age verification bills</a></p>`,
                     "Return to age-check options");
             }
@@ -510,7 +516,7 @@
                 byId("exit-age-check").disabled = true;
                 byId("exit-age-check").textContent = "Exited (simulation)";
                 setGuide(4, "Age check exited", "You avoided sharing biometric information with an unverified service.");
-                showDialog("You chose not to submit a face scan",
+                showAgeRiskDialog("You chose not to submit a face scan",
                     `<p>That is a privacy-protective choice. A face image or biometric template can identify you and cannot be replaced like a password. If collected, it could be stored longer than expected, exposed in a data leak, linked across accounts, or used to profile you. A provider should not be trusted with your face by default; review its operator, retention, deletion, sharing, and appeal practices first.</p><p>Lawmaking in several jurisdictions aims to make online spaces safer for minors through age checks. But requiring ID or face verification can create sensitive data stores, increase breach risks, and make anonymous access to lawful content harder. This is a real trade-off between age protections and privacy.</p><p>This choice does not make every service risk-free, but it avoids giving this fictional app your face. No camera is opened and no image is captured in this lesson.</p><p>Source: <a class="source-link" href="${sources.ageVerification}" target="_blank" rel="noopener noreferrer">Free Speech Coalition: Age verification bills</a></p>`,
                     "Continue", scheduleCloudNotice);
             }
@@ -612,7 +618,7 @@
                 const scoreColor = scoreAppearance(quizScore, quizQuestions.length);
                 setGuide(7, "Quiz complete", `Final score: ${quizScore} of ${quizQuestions.length}.`);
                 showDialog("Quiz complete",
-                    `<div class="score-card" style="background-color:${scoreColor.background};color:${scoreColor.foreground}"><strong>${quizScore}/${quizQuestions.length}</strong><span>${quizScore} correct · ${quizQuestions.length} questions</span></div><p>${message}</p><section class="extra-reads"><h3>Extra reads</h3><ul><li><a href="${sources.freeVpn}" target="_blank" rel="noopener noreferrer">Mozilla: Risks of using a free VPN</a></li><li><a href="${sources.vpnSecurity}" target="_blank" rel="noopener noreferrer">Palo Alto Networks: VPN security</a></li><li><a href="${sources.location}" target="_blank" rel="noopener noreferrer">Florida State University: Location-sharing risks</a></li><li><a href="${sources.ageVerification}" target="_blank" rel="noopener noreferrer">Free Speech Coalition: Age verification bills</a></li><li><a href="${sources.cloud}" target="_blank" rel="noopener noreferrer">SentinelOne: Security risks of cloud computing</a></li></ul></section><p class="quiz-home-link"><a class="action-button" href="index.md">Return home</a></p>`,
+                    `<div class="score-card" style="background-color:${scoreColor.background};color:${scoreColor.foreground}"><strong>${quizScore}/${quizQuestions.length}</strong><span>${quizScore} correct · ${quizQuestions.length} questions</span></div><p>${message}</p><section class="extra-reads"><h3>Extra reads</h3><ul><li><a href="${sources.freeVpn}" target="_blank" rel="noopener noreferrer">Mozilla: Risks of using a free VPN</a></li><li><a href="${sources.vpnSecurity}" target="_blank" rel="noopener noreferrer">Palo Alto Networks: VPN security</a></li><li><a href="${sources.location}" target="_blank" rel="noopener noreferrer">Florida State University: Location-sharing risks</a></li><li><a href="${sources.ageVerification}" target="_blank" rel="noopener noreferrer">Free Speech Coalition: Age verification bills</a></li><li><a href="${sources.ageVerificationCrs}" target="_blank" rel="noopener noreferrer">Congressional Research Service: Identifying Minors Online (R47884)</a></li><li><a href="${sources.cloud}" target="_blank" rel="noopener noreferrer">SentinelOne: Security risks of cloud computing</a></li></ul></section><p class="quiz-home-link"><a class="action-button" href="index.md">Return home</a></p>`,
                     "Finish");
             }
 
