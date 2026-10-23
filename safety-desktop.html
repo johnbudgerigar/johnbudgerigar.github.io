@@ -93,13 +93,14 @@
         .guide-number { flex: 0 0 1.8rem; height: 1.8rem; display: grid; place-items: center; border-radius: 7px; color: white; background: #315e75; font-weight: 800; }
         .guide-strip p { margin: 0; line-height: 1.45; }
         .guide-strip strong { display: block; margin-bottom: 0.15rem; }
-        .lesson-dialog { width: min(540px, calc(100% - 2rem)); padding: 0; border: 1px solid #b9c8d3; border-radius: 12px; color: var(--ink); background: var(--chrome); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38); overflow: hidden; }
+        .lesson-dialog { width: min(540px, calc(100% - 2rem)); max-height: min(86vh, 760px); padding: 0; border: 1px solid #b9c8d3; border-radius: 12px; color: var(--ink); background: var(--chrome); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38); overflow: hidden; }
+        .lesson-dialog[open] { display: flex; flex-direction: column; }
         .lesson-dialog::backdrop { background: rgba(7, 20, 28, 0.58); }
-        .dialog-titlebar { padding: 0.75rem 1rem; color: #183348; background: #eef3f7; border-bottom: 1px solid #d0dce4; font-weight: 800; }
-        .dialog-body { padding: 1rem; background: var(--paper); line-height: 1.55; }
+        .dialog-titlebar { flex: 0 0 auto; padding: 0.75rem 1rem; color: #183348; background: #eef3f7; border-bottom: 1px solid #d0dce4; font-weight: 800; }
+        .dialog-body { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1rem; background: var(--paper); line-height: 1.55; }
         .dialog-body p:first-child { margin-top: 0; }
         .dialog-body p:last-child { margin-bottom: 0; }
-        .dialog-actions { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0.7rem; border-top: 1px solid #d5dfe5; background: var(--chrome); }
+        .dialog-actions { flex: 0 0 auto; display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0.7rem; border-top: 1px solid #d5dfe5; background: var(--chrome); }
         .final-summary { padding-left: 1.25rem; }
         .final-summary li { margin: 0.45rem 0; }
         .quiz-progress { margin: 0 0 0.7rem; color: #526574; font-size: 0.82rem; font-weight: 700; }
@@ -391,7 +392,7 @@
                     byId("browser-title").textContent = "Browser — Chatterbox";
                     setGuide(3, "Review the location request", "The mock social app asks for location. Consider whether it needs that access, then choose whether to share.");
                     showDialog("Location sharing has a privacy cost",
-                        `<p>Apps may use location to build a pattern of where you live, work, and travel. Location data can enable profiling, be shared or sold, or expose you when posts are public. In this simulation, location is never collected.</p><p>A VPN can mask your public IP address and reduce rough location estimates based on that IP. It does <strong>not</strong> hide GPS, undo app permissions, or prevent account-based tracking.</p><p>Source: <a class="source-link" href="${sources.location}" target="_blank" rel="noopener noreferrer">Florida State University: Location-sharing risks</a></p>`,
+                        `<p>Location sharing can reveal where you live, work, and travel. An overly broad audience or compromised account may expose those patterns or make targeting easier. Some apps may combine, share, or sell location data; practices vary, so check the app's permissions and privacy policy. Florida State University's article focuses on visibility, routines, and misuse risks; it does not establish a particular app's data-sale practices. In this simulation, location is never collected.</p><p>A VPN can mask your public IP address and reduce rough location estimates based on that IP. It does <strong>not</strong> hide GPS, undo app permissions, or prevent account-based tracking.</p><p>Source: <a class="source-link" href="${sources.location}" target="_blank" rel="noopener noreferrer">Florida State University ITS: Location-sharing risks</a></p>`,
                         "Review the request");
                     stage = 7;
                 }
@@ -546,7 +547,7 @@
                 byId("cloud-files").hidden = true;
                 setGuide(5, "Think about storage and backups", "The fictional cloud copies are deleted. Review the storage tradeoffs before wrapping up.");
                 showDialog("Cloud storage: convenience and risk",
-                    `<p>Cloud services can be useful, but account compromise, incorrect sharing settings, service outages, and provider-side incidents can expose or make files unavailable. Keep sensitive originals in encrypted local storage and maintain a separate backup; don’t rely on one copy in one place.</p><p>Deleting a synced cloud copy may not remove copies already downloaded, shared, or retained in backups. In this demo, only the fictional sample list is removed.</p><p>Source: <a class="source-link" href="${sources.cloud}" target="_blank" rel="noopener noreferrer">SentinelOne: Security risks of cloud computing</a></p>`,
+                    `<p>Cloud services are not inherently unsafe, but account compromise, incorrect sharing settings, outages, and provider incidents can expose files or interrupt access. Local devices can also be lost, stolen, damaged, or compromised. For sensitive files, use encryption, strong account protection, careful sharing settings, and a separate encrypted backup rather than relying on one copy in one place.</p><p>Deleting a synced cloud copy may not remove copies already downloaded, shared, or retained in backups. In this demo, only the fictional sample list is removed.</p><p>Source: <a class="source-link" href="${sources.cloud}" target="_blank" rel="noopener noreferrer">SentinelOne (cloud-security vendor): Security risks of cloud computing</a></p>`,
                     "Finish the lesson", finishLesson);
             });
 
